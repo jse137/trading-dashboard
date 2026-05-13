@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 # =========================
 # CONFIG
@@ -66,6 +67,18 @@ latest_score = 7.5
 
 if latest_score >= 8:
 
+    st.success("🟢 COMPRA FUERTE")
+
+elif latest_score >= 5:
+
+    st.warning("🟡 ESPERAR")
+
+else:
+
+    st.error("🔴 VENTA / DEBILIDAD")
+
+if latest_score >= 8:
+
     st.markdown(
         '<p class="big-font green">🟢 MERCADO FUERTE</p>',
         unsafe_allow_html=True
@@ -119,20 +132,22 @@ st.pyplot(fig)
 # PRECIOS EN VIVO
 # =========================
 
-st.subheader("📈 RSI VISUAL")
+st.subheader("📈 RSI + PRECIO")
 
 try:
 
-    ticker_rsi = "YPFD.BA"
+    ticker_chart = "YPFD.BA"
 
     data = yf.download(
-        ticker_rsi,
-        period="1mo",
+        ticker_chart,
+        period="3mo",
         interval="1d",
         auto_adjust=True
     )
 
     data.columns = data.columns.get_level_values(0)
+
+    # RSI
 
     delta = data['Close'].diff()
 
@@ -146,19 +161,37 @@ try:
 
     rsi = 100 - (100 / (1 + rs))
 
-    fig, ax = plt.subplots()
+    # GRAFICO PLOTLY
 
-    ax.plot(rsi)
+    fig = go.Figure()
 
-    ax.axhline(70, linestyle='--')
-    ax.axhline(30, linestyle='--')
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=data['Close'],
+        mode='lines',
+        name='Precio'
+    ))
 
-    ax.set_title(f"RSI - {ticker_rsi}")
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=rsi,
+        mode='lines',
+        name='RSI'
+    ))
 
-    st.pyplot(fig)
+    fig.update_layout(
+        height=600,
+        template='plotly_dark',
+        title=f"{ticker_chart} - Precio + RSI"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 except:
-    st.warning("No se pudo cargar RSI")
+    st.warning("No se pudo cargar gráfico")
 
 st.subheader("💹 Mercado actual")
 
