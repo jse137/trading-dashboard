@@ -5,4 +5,5 @@ matplotlib
 ta
 tabulate
 requests
-schedule
+Schedule
+plotly
