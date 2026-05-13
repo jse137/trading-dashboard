@@ -14,6 +14,29 @@ st.set_page_config(
 
 st.title("📈 Trading Dashboard")
 
+st.markdown("""
+<style>
+
+.big-font {
+    font-size:22px !important;
+    font-weight:bold;
+}
+
+.green {
+    color:#00cc66;
+}
+
+.red {
+    color:#ff4b4b;
+}
+
+.yellow {
+    color:#ffcc00;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # =========================
 # CARGAR CSV
 # =========================
@@ -36,6 +59,31 @@ st.dataframe(df)
 # =========================
 # ESTADISTICAS
 # =========================
+
+st.subheader("🧠 IA MARKET STATUS")
+
+latest_score = 7.5
+
+if latest_score >= 8:
+
+    st.markdown(
+        '<p class="big-font green">🟢 MERCADO FUERTE</p>',
+        unsafe_allow_html=True
+    )
+
+elif latest_score >= 5:
+
+    st.markdown(
+        '<p class="big-font yellow">🟡 MERCADO NEUTRO</p>',
+        unsafe_allow_html=True
+    )
+
+else:
+
+    st.markdown(
+        '<p class="big-font red">🔴 MERCADO DEBIL</p>',
+        unsafe_allow_html=True
+    )
 
 st.subheader("📊 Estadísticas")
 
@@ -70,6 +118,47 @@ st.pyplot(fig)
 # =========================
 # PRECIOS EN VIVO
 # =========================
+
+st.subheader("📈 RSI VISUAL")
+
+try:
+
+    ticker_rsi = "YPFD.BA"
+
+    data = yf.download(
+        ticker_rsi,
+        period="1mo",
+        interval="1d",
+        auto_adjust=True
+    )
+
+    data.columns = data.columns.get_level_values(0)
+
+    delta = data['Close'].diff()
+
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.rolling(14).mean()
+    avg_loss = loss.rolling(14).mean()
+
+    rs = avg_gain / avg_loss
+
+    rsi = 100 - (100 / (1 + rs))
+
+    fig, ax = plt.subplots()
+
+    ax.plot(rsi)
+
+    ax.axhline(70, linestyle='--')
+    ax.axhline(30, linestyle='--')
+
+    ax.set_title(f"RSI - {ticker_rsi}")
+
+    st.pyplot(fig)
+
+except:
+    st.warning("No se pudo cargar RSI")
 
 st.subheader("💹 Mercado actual")
 
@@ -118,6 +207,12 @@ st.dataframe(market_df)
 # =========================
 # ULTIMAS SEÑALES
 # =========================
+
+st.subheader("🏆 Ranking de activos")
+
+ranking = df['ticker'].value_counts()
+
+st.dataframe(ranking)
 
 st.subheader("🚨 Últimas señales")
 
