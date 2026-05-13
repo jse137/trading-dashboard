@@ -1,0 +1,3 @@
+datetime,ticker,signal,price,rsi,probability,volume_ratio
+2026-05-12 12:00:00,YPFD.BA,COMPRA,42000,31,78,2.1
+2026-05-12 14:00:00,VIST,VENTA,7800,72,81,2.4
