@@ -198,8 +198,8 @@ st.subheader("💹 Mercado actual")
 tickers = [
     "YPFD.BA",
     "VIST.BA",
-    "JPM.BA"
-    "BRKB.BA"
+    "JPM"
+    "BRK-B"
 ]
 
 market_data = []
