@@ -15,6 +15,72 @@ st.set_page_config(
 
 st.title("📈 Trading Dashboard")
 
+signals_df = pd.read_csv("signals_log.csv")
+
+total_signals = len(signals_df)
+
+successful = 0
+
+if 'success' in signals_df.columns:
+    successful = signals_df['success'].fillna(0).sum()
+
+win_rate = 0
+
+if total_signals > 0:
+    win_rate = round(
+        (successful / total_signals) * 100,
+        1
+    )
+
+    col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(
+        "Señales",
+        total_signals
+    )
+
+with col2:
+    st.metric(
+        "Win Rate",
+        f"{win_rate}%"
+    )
+
+with col3:
+    st.metric(
+        "Exitosas",
+        int(successful)
+    )
+
+st.subheader("🔥 Señales recientes")
+
+recent = signals_df.tail(10)
+
+st.dataframe(
+    recent,
+    height=250,
+    width='stretch'
+)
+
+st.subheader("📈 Ranking activos")
+
+ranking = (
+    signals_df
+    .groupby('ticker')
+    .size()
+    .reset_index(name='signals')
+    .sort_values(
+        by='signals',
+        ascending=False
+    )
+)
+
+st.dataframe(
+    ranking,
+    height=180,
+    width='stretch'
+)
+
 st.markdown("""
 <style>
 
