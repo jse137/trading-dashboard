@@ -276,32 +276,97 @@ for ticker in tickers:
 
         data = yf.download(
             ticker,
-            period="1d",
-            interval="1h",
+            period="3mo",
+            interval="1d",
             auto_adjust=True
         )
 
         data.columns = data.columns.get_level_values(0)
 
-        last_price = round(
-            data['Close'].iloc[-1],
-            2
-        )
+        close = data['Close']
 
-        market_data.append([
-            ticker,
-            last_price
-        ])
+        # RSI
+
+        delta = close.diff()
+
+        gain = delta.clip(lower=0)
+        loss = -delta.clip(upper=0)
+
+        avg_gain = gain.rolling(14).mean()
+        avg_loss = loss.rolling(14).mean()
+
+        rs = avg_gain / avg_loss
+
+        rsi = 100 - (100 / (1 + rs))
+
+        rsi_value = round(rsi.iloc[-1], 2)
+
+        # EMA
+
+        ema9 = close.ewm(span=9).mean()
+        ema21 = close.ewm(span=21).mean()
+
+        # IA SCORE
+
+        ai_score = 0
+
+        if rsi_value < 35:
+            ai_score += 3
+
+        if ema9.iloc[-1] > ema21.iloc[-1]:
+            ai_score += 3
+
+        if close.iloc[-1] > ema21.iloc[-1]:
+            ai_score += 2
+
+        if ai_score >= 7:
+            status = "🔥 FUERTE"
+
+        elif ai_score >= 5:
+            status = "🟢 COMPRA"
+
+        else:
+            status = "🟡 NEUTRO"
+
+        last_price = round(close.iloc[-1], 2)
+
+        market_data.append({
+
+            "Ticker": ticker,
+            "Precio": last_price,
+            "RSI": rsi_value,
+            "IA Score": ai_score,
+            "Estado": status
+        })
 
     except:
         pass
 
-market_df = pd.DataFrame(
-    market_data,
-    columns=["Ticker", "Precio"]
+market_df = pd.DataFrame(market_data)
+
+market_df = market_df.sort_values(
+    by='IA Score',
+    ascending=False
 )
 
-st.dataframe(market_df)
+st.dataframe(
+    market_df,
+    width='stretch'
+)
+
+best = market_df.iloc[0]
+
+st.subheader("⭐ Mejor oportunidad")
+
+st.write(
+    f"""
+Activo: {best['Ticker']}
+
+Estado: {best['Estado']}
+
+IA Score: {best['IA Score']}
+"""
+)
 
 # =========================
 # ULTIMAS SEÑALES
